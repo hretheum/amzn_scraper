@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<div class="card mt-2" style="max-width:330px; margin:auto; padding: 10px">
+    <h1>Logowanie:</h1>
+    <form method="post" action="">
+        nazwa użytkownika:
+        <input type="text" class="form-control my-2" name="username">
+        hasło:
+        <input type="password" class="form-control my-2" name="password">
+        <input type="submit" class="btn btn-secondary my-2">
+    </form>
+    {% if messages %}
+    <div class="alert alert-danger">{{ messages[0] }}</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+
+

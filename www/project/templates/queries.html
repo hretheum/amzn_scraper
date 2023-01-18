@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+<h2>przeskanuj amazon</h2>
+
+<div class="w-50">
+<input type="text" id="livebox" name="text" class="form-control" placeholder="wyszukiwana fraza" autocomplete="off">
+<p id = "datalist"></p>
+</div>
+
+
+
+<h2>Wcześniej wyszukiwane frazy</h2>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+     <div id="alert" class="alert alert-success" role="alert">
+         {{message}}
+    </div>
+
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<table>
+    <thead>
+        <tr><th>ID</th>
+        <th>query</th>
+        <th>Updated on</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for query in queries %}
+        <tr>
+            <td>{{ query.id }}</td>
+            <td><a href=/q/{{ query.id }}>{{ query.query }}</a></td>
+            <td>{{ query.timestamp}} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+setTimeout(function () {
+
+            // Closing the alert
+            $('#alert').alert('close');
+        }, 2500);
+    $(document).ready(function(){
+        $("#livebox").on("input",function(e){
+            $("#datalist").empty();
+            $.ajax({
+                method:"post",
+                url:"/livesearch",
+                data:{text:$("#livebox").val()},
+                success:function(res){
+                    var addQuery = $("#livebox").val()
+                    var data = "<div class='list-group list-group-flush'><p class='list-group-item list-group-item-action'><a href='/addquery/"+addQuery+"'>dodaj nowy skan</a></p>";
+                    $.each(res,function(index,value){
+                        data += "<p class='list-group-item list-group-item-action'><a href='/q/"+value.id+"'>"+value.query+"</a></p>";
+                    });
+                    data += "</div>";
+                    $("#datalist").html(data);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

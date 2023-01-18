@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+<a href="/">home</a>
+<h1>Wyniki wyszukiwania</h1>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a href="/q/{{query}}" class="nav-link active">Active</a></li>
+    <li class="nav-item"><a href="/q/{{query}}/hidden" class="nav-link">Hidden</a></li>
+  </ul>
+
+
+<table class="table table-responsive table-striped table-separate">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th class="col-sm-1">Action</th>
+            <th>title</th>
+            <th class="col-sm-2 text-end">Price</th>
+            <th class="mx-lg">Updated on</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for offer in offers %}
+        <tr>
+            <td>{{offer.id}}</td>
+            <td class="col-sm-1">
+                <div>
+                    <a href="/q/{{query}}/record/{{offer.id}}/{% if hidden %}show{%else%}hide{%endif%}" class="del-icon text-decoration-none" data-recordid="{{offer.id}}">
+                        {% if hidden %}
+                            <i class="fa-solid fa-eye text-secondary"></i>
+                        {% else %}
+                            <i class="fa-solid fa-eye-slash text-secondary"></i>
+                        {% endif %}
+                        <a href="https://amazon.pl/dp/{{offer.asin}}" target="_blank" class="text-decoration-none">&nbsp;<i class="fa-solid fa-arrow-up-right-from-square text-secondary"></i></a>
+                    </a>
+
+                    <a href="/record/{{offer.id}}" class="text-decoration-none">&nbsp;<i class="fa-solid fa-circle-info text-secondary"></i></a>
+
+                </div>
+            </td>
+            <td>
+                <span class="title">{{ offer.title }}</span>
+                <input type="text" class="form-control title-input" value="{{ offer.title }}" style="display: none;">
+            </td>
+            <td class="col-sm-2 text-end">
+                {% set price = offer.price|float %}
+                <span class="price">{{ '{:,.2f}'.format(price|float).replace(',', ' ') }} zł</span>
+                <input type="text" class="form-control price-input" value="{{ offer.price }}" style="display: none;">
+            </td>
+            <td class="col-sm-2">{{ offer.timestamp}} </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('.title, .price').click(function() {
+    $(this).hide().siblings().show().focus();
+  });
+
+  $('.title-input, .price-input').blur(function() {
+    $(this).hide().siblings().show();
+  });
+
+  $('.title-input, .price-input').keypress(function(e) {
+    if(e.which == 13) {
+      var field_name = $(this).hasClass('title-input') ? 'title' : 'price';
+      var field_value = $(this).val();
+      var offer_id = $(this).closest('tr').find('.del-icon').data('recordid');
+      var input_field = $(this);
+
+      $.ajax({
+        url: '/update',
+        type: 'POST',
+        data: { field_name: field_name, field_value: field_value, offer_id: offer_id },
+        success: function(response) {
+          if(response.success) {
+            input_field.hide().siblings('span').show();
+            if(field_name == 'title') {
+              input_field.siblings('.title').text(field_value);
+            } else {
+              input_field.siblings('.price').text(field_value);
+            }
+          }
+        }
+      });
+    }
+  });
+});
+
+
+</script>
+
+{% endblock %}

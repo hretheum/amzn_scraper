@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<script language="JavaScript">
+
+</script>
+<a href="/">home</a>
+<h1>Wyniki wyszukiwania</h1>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a href="/q/{{query}}" class="nav-link">Active</a></li>
+    <li class="nav-item"><a href="/q/{{query}}/hidden" class="nav-link active">Hidden</a></li>
+  </ul>
+
+
+<table class="table table-responsive table-striped table-separate">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th class="col-sm-1">Action</th>
+            <th>title</th>
+            <th class="col-sm-2 text-end">Price</th>
+            <th class="mx-lg">Updated on</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for offer in offers %}
+        <tr>
+            <td>{{offer.id}}</td>
+            <td class="col-sm-1">
+                <div>
+                    <a href="/q/{{query}}/record/{{offer.id}}/{% if hidden %}show{%else%}hide{%endif%}" class="del-icon text-decoration-none" data-recordid="{{offer.id}}">
+                        {% if hidden %}
+                            <i class="fa-solid fa-eye text-secondary"></i>
+                        {% else %}
+                            <i class="fa-solid fa-eye-slash text-secondary"></i>
+                        {% endif %}
+                        <a href="https://amazon.pl/dp/{{offer.asin}}" target="_blank" class="text-decoration-none">&nbsp;<i class="fa-solid fa-arrow-up-right-from-square text-secondary"></i></a>
+                    </a>
+
+                    <a href="/record/{{offer.id}}" class="text-decoration-none">&nbsp;<i class="fa-solid fa-circle-info text-secondary"></i></a>
+
+                </div>
+            </td>
+            <td>
+                <span class="title">{{ offer.title }}</span>
+                <input type="text" class="form-control title-input" value="{{ offer.title }}" style="display: none;">
+            </td>
+            <td class="col-sm-2 text-end">
+                {% set price = offer.price|float %}
+                <span class="price">{{ '{:,.2f}'.format(price|float).replace(',', ' ') }} zł</span>
+                <input type="text" class="form-control price-input" value="{{ offer.price }}" style="display: none;">
+            </td>
+            <td class="col-sm-2">{{ offer.timestamp}} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    $(function(){
+
+        $('table td').on('click', function(){
+            var field = $(this).find('span');
+            var input = $(this).find('input');
+            console.log('co do kurwy');
+            field.hide();
+            input.show();
+
+            input.focus();
+        });
+
+        $('table td input').on('keydown', function(e){
+            var input = $(this);
+            var field = $(this).siblings('span')
+
+            // on Enter
+            if (e.keyCode == 13) {
+                var price = $(this).closest('tr').find('.price-input').val()
+                var title = $(this).closest('tr').find('.title-input').val()
+                var id = $(this).closest('tr').find('td:first-child').text()
+                $.post('/update/'+ id, {price: price, title: title}, function(data){
+                    field.text(data.price);
+                    field.text(data.title);
+                    input.hide();
+                    field.show();
+                })
+            }
+        });
+        });
+</script>
+
+{% endblock %}

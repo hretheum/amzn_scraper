@@ -1,0 +1,10 @@
+Flask
+Flask-Login
+Flask-SQLAlchemy
+mysql
+mysql-connector-python
+mysqlclient
+PyMySQL
+python-dotenv
+Scrapy
+SQLAlchemy
